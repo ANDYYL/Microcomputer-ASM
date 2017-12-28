@@ -1,0 +1,81 @@
+DAT SEGMENT
+NUM2 DB 0E3H
+NUM DB 0EFH
+DAT ENDS 
+STA SEGMENT STACK'STACK'
+	DB 100 DUP(?)
+STA ENDS 
+
+
+COD SEGMENT
+ASSUME CS:COD,DS:DAT,SS:STA
+
+START PROC FAR
+
+PUSH DS
+MOV AX,0
+PUSH AX 
+
+MOV AX,DAT
+MOV DS,AX
+MOV DX,0EEE0H
+
+LOOP0:  IN AL,DX
+		MOV AH,AL       
+
+		TEST AL,01H     
+		JNZ GG          
+
+		TEST AL,02H     
+		JNZ LOOP0       
+
+		TEST AL,04H     
+		JNZ RR          
+		
+		TEST AL,80H
+		JNZ MODEL
+
+		ROL NUM,1       
+		JMP LOOP2       
+
+MODEL:          PUSH DX
+		MOV DL,NUM2
+	MOV NUM,DL
+	POP DX
+
+RR:             ROR NUM,1       
+
+LOOP2:  AND AH,1FH      
+		MOV CL,AH       
+		MOV CH,0
+		MOV AL,NUM
+		OUT DX,AL       
+		INC CX          
+
+LOOP1:  CALL DELAY      
+		LOOP LOOP1
+		JMP  LOOP0 
+
+GG:             RETF
+
+START ENDP
+
+
+DELAY   PROC
+		PUSH CX
+		MOV CX,008FFH
+D1:             PUSH CX
+		MOV CX,004FFH
+D2:             LOOP D2
+		POP CX
+		LOOP D1
+		POP CX
+
+		RET
+
+DELAY   ENDP
+
+
+
+COD ENDS
+END START
